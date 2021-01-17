@@ -27,7 +27,7 @@ def get_percent(str_par):
         print ("DEBUG", str_par)
         raise
     
-def get_seller_info_from_span(seller_persona_span):
+def get_seller_info_from_persona(seller_persona_span):
     print ("Num remarks:", get_in_paranthasis(clean_html( str(seller_persona_span.contents[1]) )))
     print ("precent: ", get_percent(str( seller_persona_span.contents[2] )))
     return
@@ -54,9 +54,16 @@ def explore_product_page(href):
     res.raise_for_status()
     soup = bs4.BeautifulSoup(res.text, "lxml")
 
+    # if theres original link use it to get data
+    original_link = soup.find(class_='nodestar-item-card-details__view-link')
+    if original_link:
+        res = requests.get(original_link['href'])
+        res.raise_for_status()
+        soup = bs4.BeautifulSoup(res.text, "lxml")
+
     seller_persona_span = soup.find(class_='seller-persona')
     if seller_persona_span:
-        return get_seller_info_from_span(seller_persona_span)
+        return get_seller_info_from_persona(seller_persona_span)
 
     seller_span = soup.find(class_='mbg-l')
     if seller_span:
@@ -65,35 +72,11 @@ def explore_product_page(href):
     seller_span = soup.find(class_='bdg-90')
     if seller_span:
         return get_data_from_seller_page(seller_span)
-
-    original_link = soup.find(class_='nodestar-item-card-details__view-link')
-    if original_link:
-        res = requests.get(original_link['href'])
-        res.raise_for_status()
-        soup = bs4.BeautifulSoup(res.text, "lxml")
-        seller_persona_span = soup.find(class_='seller-persona')
-        if seller_persona_span:
-            return get_seller_info_from_span(seller_persona_span)
-
-        seller_span = soup.find(class_='mbg-l')
-        if seller_span:
-            return get_data_from_seller_page(seller_span)
-
-        seller_span = soup.find(class_='bdg-90')
-        return get_data_from_seller_page(seller_span)
-
-        
         
     
     original_listing = soup.find_all('h1')
     print (original_listing)
     raise Exception("Stop!")
-
-    # res = requests.get(original_listing.contents[0]['href'])
-    # res.raise_for_status()
-    # soup = bs4.BeautifulSoup(res.text, "lxml")
-    # seller_span = soup.find(class_='seller-persona')
-    # return get_seller_info_from_span(seller_span)
 
 
 for phrase in phrases:

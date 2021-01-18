@@ -11,7 +11,7 @@ from datetime import datetime
 re_html_cleanr = re.compile(r'<.*?>')
 re_par         = re.compile(r'\(([^\)]*)\)')
 re_percent     = re.compile(r'([0-9.]*)%')
-re_date        = re.compile(r'[A-z][a-z][a-z]-[0-3][0-9]-[0-2][0-9]')
+re_date_f1     = re.compile(r'[A-z][a-z][a-z]-[0-3][0-9]-[0-2][0-9]')
 
 # enter multiple phrases separated by '',
 phrases =['samsung a7']
@@ -26,8 +26,8 @@ def get_in_paranthasis(str_par):
 def get_percent(str_per):
     return re_percent.search(str_per)[1]
     
-def get_date(str_date):
-    date_data = re_date.search(str_date)[0]
+def get_date_f1(str_date):
+    date_data = re_date_f1.search(str_date)[0]
     return datetime.strptime(date_data, '%b-%d-%y')
     
 def get_seller_info_from_persona(seller_persona_span):
@@ -56,7 +56,7 @@ def get_data_from_seller_page(seller_span):
     print ("positive_feedback: {:.2f}".format(positive_feedback))
 
     user_hist = str( soup.find(**{'data-test-id':"user-history"}).contents[0] )
-    member_since = (get_date( user_hist ))
+    member_since = (get_date_f1( user_hist ))
     print ("member_since", member_since)
 
     member_from = user_hist.split(" in ")[1]
@@ -88,6 +88,9 @@ def get_bid_data_from_bid_page(href, opening_bid):
     last_row = soup.find(class_="ui-component-table_wrapper").contents[1]
     if (len(last_row) > 1):
         opening_bid = last_row.contents[-1].contents[1].getText()
+
+    print( soup.find(class_="app-bid-info_wrapper").contents[0].contents[2].getText() )
+    print( soup.find(class_="app-bid-info_wrapper").contents[0].contents[3].getText() )
     return (opening_bid, None)
 
 def extract_bid_data(soup):

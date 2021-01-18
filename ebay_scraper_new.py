@@ -64,18 +64,7 @@ def get_data_from_seller_page(seller_span):
 
     return (rating, all_votes, positive_feedback, member_since, member_from)
 
-def explore_product_page(href):
-    res = requests.get(href)
-    res.raise_for_status()
-    soup = bs4.BeautifulSoup(res.text, "lxml")
-
-    # if theres original link use it to get data
-    original_link = soup.find(class_='nodestar-item-card-details__view-link')
-    if original_link:
-        res = requests.get(original_link['href'])
-        res.raise_for_status()
-        soup = bs4.BeautifulSoup(res.text, "lxml")
-
+def extract_seller_data(soup):
     seller_span = soup.find(class_='mbg-l')
     if seller_span:
         return get_data_from_seller_page(seller_span)
@@ -83,6 +72,79 @@ def explore_product_page(href):
     seller_span = soup.find(class_='bdg-90')
     if seller_span:
         return get_data_from_seller_page(seller_span)
+
+def get_bidding_price(soup):
+    bid_price_element = soup.find(id='prcIsum_bidPrice')
+    if (bid_price_element):
+        return bid_price_element.getText()
+    bid_price_element = soup.find(class_='vi-VR-cvipPrice')
+    return bid_price_element.getText()
+
+def get_bid_data_from_bid_page(href, opening_bid):
+    res = requests.get(href)
+    res.raise_for_status()
+    soup = bs4.BeautifulSoup(res.text, "lxml")
+
+    last_row = soup.find(class_="ui-component-table_wrapper").contents[1]
+    if (len(last_row) > 1):
+        opening_bid = last_row.contents[-1].contents[1].getText()
+    return (opening_bid, None)
+
+def extract_bid_data(soup):
+    sold = 1
+    bids_link = soup.find(id='vi-VR-bid-lnk')
+    number_of_bids = bids_link.contents[0].contents[0]
+    if number_of_bids == '0':
+        sold = 0
+
+    starting_bid_price = get_bidding_price(soup)
+    winning_bid_price = None
+    bid_data = get_bid_data_from_bid_page(bids_link['href'], starting_bid_price)
+
+    if sold == 1:
+        winning_bid_price = starting_bid_price
+        starting_bid_price = bid_data[0]
+
+    starting_bid_price_currancy, starting_bid_price_value = starting_bid_price.split(' ')
+    winning_bid_price_currancy, winning_bid_price_value = (None, None)
+    if winning_bid_price:
+        winning_bid_price_currancy, winning_bid_price_value = winning_bid_price.split(' ')
+
+    print ("winning_bid_price", winning_bid_price_currancy, winning_bid_price_value)
+    print ("starting_bid_price", starting_bid_price_currancy, starting_bid_price_value)
+    print ("Did the listing sell? ", sold)
+    
+    return (sold, 
+        starting_bid_price_currancy, starting_bid_price_value, 
+        winning_bid_price_currancy, winning_bid_price_value, )
+
+def extract_sale_data(soup):    
+    (sold, 
+        starting_bid_price_currancy, starting_bid_price_value, 
+        winning_bid_price_currancy, winning_bid_price_value, ) = extract_bid_data(soup)
+        
+    return (sold, 
+        starting_bid_price_currancy, starting_bid_price_value, 
+        winning_bid_price_currancy, winning_bid_price_value, )
+
+
+
+def explore_product_page(href):
+    res = requests.get(href)
+    res.raise_for_status()
+    soup = bs4.BeautifulSoup(res.text, "lxml")
+    
+    # if theres original link use it to get data
+    original_link = soup.find(class_='nodestar-item-card-details__view-link')
+    if original_link:
+        res = requests.get(original_link['href'])
+        res.raise_for_status()
+        soup = bs4.BeautifulSoup(res.text, "lxml")
+
+    extract_sale_data(soup)
+    # (rating, all_votes, positive_feedback, member_since, member_from) = extract_seller_data(soup)
+
+    # return (rating, all_votes, positive_feedback, member_since, member_from)
 
 for phrase in phrases:
     site = ('https://www.ebay.com/sch/i.html?_from=R40&_sacat=0&_udlo=' +
@@ -95,10 +157,9 @@ for phrase in phrases:
     soup = bs4.BeautifulSoup(res.text, "lxml")
 
     # grab all the links and store its href destinations in a list
-    link_objs = soup.find_all(class_="vip")
+    link_listing = soup.find_all(class_="vip")
 
-    title_quote = re.compile('[^0-9A-Za-z .-_]')
-    for i, l in enumerate(link_objs):
+    for i, l in enumerate(link_listing):
         title = l.contents[0]
         href = l['href']
 
@@ -108,6 +169,7 @@ for phrase in phrases:
             print (href)
             raise
 
+        # early break
         if i > 10:
             break
 

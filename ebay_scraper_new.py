@@ -12,6 +12,7 @@ re_html_cleanr = re.compile(r'<.*?>')
 re_par         = re.compile(r'\(([^\)]*)\)')
 re_percent     = re.compile(r'([0-9.]*)%')
 re_date_f1     = re.compile(r'[A-z][a-z][a-z]-[0-3][0-9]-[0-2][0-9]')
+re_date_f2     = re.compile(r'[0-3]?[0-9] [A-z][a-z][a-z] [1-2][09][0-9][0-9]')
 
 # enter multiple phrases separated by '',
 phrases =['samsung a7']

@@ -39,7 +39,7 @@ def get_data_from_seller_page(seller_span):
     seller_page_href = seller_span.contents[1]['href']
     res = requests.get(seller_page_href)
     res.raise_for_status()
-    soup = bs4.BeautifulSoup(res.text, "lxml")
+    soup = bs4.BeautifulSoup(res.text, "html.parser")
     
     rating = soup.find(**{'data-test-id':"user-score"}).contents[0]
     print ("rating_score:", rating)
@@ -67,14 +67,14 @@ def get_data_from_seller_page(seller_span):
 def explore_product_page(href):
     res = requests.get(href)
     res.raise_for_status()
-    soup = bs4.BeautifulSoup(res.text, "lxml")
+    soup = bs4.BeautifulSoup(res.text, "html.parser")
 
     # if theres original link use it to get data
     original_link = soup.find(class_='nodestar-item-card-details__view-link')
     if original_link:
         res = requests.get(original_link['href'])
         res.raise_for_status()
-        soup = bs4.BeautifulSoup(res.text, "lxml")
+        soup = bs4.BeautifulSoup(res.text, "html.parser")
 
     seller_span = soup.find(class_='mbg-l')
     if seller_span:
@@ -92,7 +92,7 @@ for phrase in phrases:
 
     res = requests.get(site)
     res.raise_for_status()
-    soup = bs4.BeautifulSoup(res.text, "lxml")
+    soup = bs4.BeautifulSoup(res.text, "html.parser")
 
     # grab all the links and store its href destinations in a list
     link_objs = soup.find_all(class_="vip")

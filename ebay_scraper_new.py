@@ -8,17 +8,12 @@ from urllib.parse import quote_plus
 from datetime import datetime
 
 # Widly used regexes compiled
-re_html_cleanr = re.compile(r'<.*?>')
 re_par         = re.compile(r'\(([^\)]*)\)')
 re_percent     = re.compile(r'([0-9.]*)%')
 re_date        = re.compile(r'[A-z][a-z][a-z]-[0-3][0-9]-[0-2][0-9]')
 
 # enter multiple phrases separated by '',
 phrases =['samsung a7']
-
-def clean_html(raw_html):    
-    cleantext = re.sub(re_html_cleanr, '', raw_html)
-    return cleantext
 
 def get_in_paranthasis(str_par):
     return re_par.search(str_par)[1]
@@ -29,11 +24,6 @@ def get_percent(str_per):
 def get_date(str_date):
     date_data = re_date.search(str_date)[0]
     return datetime.strptime(date_data, '%b-%d-%y')
-    
-def get_seller_info_from_persona(seller_persona_span):
-    print ("Num remarks:", get_in_paranthasis(clean_html( str(seller_persona_span.contents[1]) )))
-    print ("precent: ", get_percent(str( seller_persona_span.contents[2] )))
-    return
 
 def get_data_from_seller_page(seller_span):
     seller_page_href = seller_span.contents[1]['href']
@@ -47,9 +37,9 @@ def get_data_from_seller_page(seller_span):
     all_votes = 0
 
     for i in range(3):
-        all_votes += int( clean_html( str(soup.find(class_='overall-rating-summary').
+        all_votes += int( (soup.find(class_='overall-rating-summary').
             contents[1].contents[1].contents[i].contents[3] # table->tbody->line-i->cell-4 (count for 12 month)
-        ) ) )
+        ).getText() )
     print ("overall_votes:", all_votes)
 
     positive_feedback = float(get_percent( str(soup.find(class_='positiveFeedbackText')) ))

@@ -146,21 +146,35 @@ def extract_bid_data(soup):
         starting_bid_price_currancy, starting_bid_price_value, 
         winning_bid_price_currancy, winning_bid_price_value, )
 
+def get_original_link_soup(soup):
+    original_link = soup.find(class_='nodestar-item-card-details__view-link')
+    if original_link:
+        res = requests.get(original_link['href'])
+        res.raise_for_status()
+        return bs4.BeautifulSoup(res.text, "lxml")
+    
+    original_link = soup.find(class_='vi-original-listing')
+    if original_link:
+        res = requests.get(original_link.contents[0]['href'])
+        res.raise_for_status()
+        return bs4.BeautifulSoup(res.text, "lxml")
+
+    return soup
+
 def explore_product_page(href):
     res = requests.get(href)
     res.raise_for_status()
     soup = bs4.BeautifulSoup(res.text, "lxml")
     
     # if theres original link use it to get data
-    original_link = soup.find(class_='nodestar-item-card-details__view-link')
-    if original_link:
-        res = requests.get(original_link['href'])
-        res.raise_for_status()
-        soup = bs4.BeautifulSoup(res.text, "lxml")
+    soup = get_original_link_soup(soup)
 
     item_condition = soup.find(id="vi-itm-cond").getText()
     print ("item_condition", item_condition)
     
+    item_location = soup.find(itemprop="availableAtOrFrom").getText().split(', ')[-1]
+    print ("item_location", item_location)
+
     # (sold, date_started, date_ended, duration,
     #     starting_bid_price_currancy, starting_bid_price_value, 
     #     winning_bid_price_currancy, winning_bid_price_value, ) = extract_bid_data(soup)

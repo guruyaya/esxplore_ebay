@@ -90,9 +90,11 @@ def get_bid_data_from_bid_page(href, opening_bid):
     res.raise_for_status()
     soup = bs4.BeautifulSoup(res.text, "lxml")
 
-    last_row = soup.find(class_="ui-component-table_wrapper").contents[1]
-    if (len(last_row) > 1):
-        opening_bid = last_row.contents[-1].contents[1].getText()
+    winning_bid = None
+    rows = soup.find(class_="ui-component-table_wrapper").contents[1]
+    if (len(rows) > 1):
+        opening_bid = rows.contents[-1].contents[1].getText()
+        winning_bid = rows.contents[0].contents[1].getText()
 
     date_ended = get_date_f2( soup.find(class_="app-bid-info_wrapper").contents[0].contents[2].getText() )
     duration_txt = soup.find(class_="app-bid-info_wrapper").contents[0].contents[3].getText()
@@ -104,7 +106,7 @@ def get_bid_data_from_bid_page(href, opening_bid):
     print ("date_started", date_started)
     print ("date_ended", date_ended)
     print ("duration", duration)
-    return (opening_bid, None)
+    return (opening_bid, winning_bid, date_started, date_ended, duration)
 
 def extract_bid_data(soup):
     sold = 1
@@ -115,11 +117,7 @@ def extract_bid_data(soup):
 
     starting_bid_price = get_bidding_price(soup)
     winning_bid_price = None
-    bid_data = get_bid_data_from_bid_page(bids_link['href'], starting_bid_price)
-
-    if sold == 1:
-        winning_bid_price = starting_bid_price
-        starting_bid_price = bid_data[0]
+    starting_bid_price, winning_bid_price, date_started, date_ended, duration = get_bid_data_from_bid_page(bids_link['href'], starting_bid_price)
 
     print ("starting_bid_price", starting_bid_price)
     print ("winning_bid_price", winning_bid_price)
@@ -140,24 +138,13 @@ def extract_bid_data(soup):
         if winning_bid_price.startswith ('US $'):
             winning_bid_price = winning_bid_price.replace('US $', 'US ')
     
-    print ("winning_bid_price", winning_bid_price_currancy, winning_bid_price_value)
-    print ("starting_bid_price", starting_bid_price_currancy, starting_bid_price_value)
+    print ("starting_bid", starting_bid_price_currancy, starting_bid_price_value)
+    print ("winning_bid", winning_bid_price_currancy, winning_bid_price_value)
     print ("Did the listing sell? ", sold)
     
-    return (sold, 
+    return (sold, date_started, date_ended, duration,
         starting_bid_price_currancy, starting_bid_price_value, 
         winning_bid_price_currancy, winning_bid_price_value, )
-
-def extract_sale_data(soup):    
-    (sold, 
-        starting_bid_price_currancy, starting_bid_price_value, 
-        winning_bid_price_currancy, winning_bid_price_value, ) = extract_bid_data(soup)
-    
-    return (sold, 
-        starting_bid_price_currancy, starting_bid_price_value, 
-        winning_bid_price_currancy, winning_bid_price_value, )
-
-
 
 def explore_product_page(href):
     res = requests.get(href)
@@ -171,7 +158,9 @@ def explore_product_page(href):
         res.raise_for_status()
         soup = bs4.BeautifulSoup(res.text, "lxml")
 
-    extract_sale_data(soup)
+    (sold, date_started, date_ended, duration,
+        starting_bid_price_currancy, starting_bid_price_value, 
+        winning_bid_price_currancy, winning_bid_price_value, ) = extract_bid_data(soup)
     # (rating, all_votes, positive_feedback, member_since, member_from) = extract_seller_data(soup)
 
     # return (rating, all_votes, positive_feedback, member_since, member_from)

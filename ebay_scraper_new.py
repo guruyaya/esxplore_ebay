@@ -109,11 +109,26 @@ def extract_bid_data(soup):
         winning_bid_price = starting_bid_price
         starting_bid_price = bid_data[0]
 
+    print ("starting_bid_price", starting_bid_price)
+    print ("winning_bid_price", winning_bid_price)
+    if starting_bid_price.startswith ('$'):
+        starting_bid_price = starting_bid_price.replace('$', 'US ')
+
+    if starting_bid_price.startswith ('US $'):
+        starting_bid_price = starting_bid_price.replace('US $', 'US ')
+    
     starting_bid_price_currancy, starting_bid_price_value = starting_bid_price.split(' ')
     winning_bid_price_currancy, winning_bid_price_value = (None, None)
     if winning_bid_price:
         winning_bid_price_currancy, winning_bid_price_value = winning_bid_price.split(' ')
 
+        if winning_bid_price.startswith ('$'):
+            winning_bid_price = winning_bid_price.replace('$', 'US ')
+
+        if winning_bid_price.startswith ('US $'):
+            winning_bid_price = winning_bid_price.replace('US $', 'US ')
+    
+    
     print ("winning_bid_price", winning_bid_price_currancy, winning_bid_price_value)
     print ("starting_bid_price", starting_bid_price_currancy, starting_bid_price_value)
     print ("Did the listing sell? ", sold)

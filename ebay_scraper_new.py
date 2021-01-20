@@ -175,6 +175,8 @@ def explore_product_page(href):
     item_location = soup.find(itemprop="availableAtOrFrom").getText().split(', ')[-1]
     print ("item_location", item_location)
 
+    item_shipping = soup.find(id="shippingPlaceHolderId").getText()
+    print("item_shipping", item_shipping)
     # (sold, date_started, date_ended, duration,
     #     starting_bid_price_currancy, starting_bid_price_value, 
     #     winning_bid_price_currancy, winning_bid_price_value, ) = extract_bid_data(soup)

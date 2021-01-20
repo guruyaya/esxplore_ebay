@@ -158,9 +158,12 @@ def explore_product_page(href):
         res.raise_for_status()
         soup = bs4.BeautifulSoup(res.text, "lxml")
 
-    (sold, date_started, date_ended, duration,
-        starting_bid_price_currancy, starting_bid_price_value, 
-        winning_bid_price_currancy, winning_bid_price_value, ) = extract_bid_data(soup)
+    item_condition = soup.find(id="vi-itm-cond").getText()
+    print ("item_condition", item_condition)
+    
+    # (sold, date_started, date_ended, duration,
+    #     starting_bid_price_currancy, starting_bid_price_value, 
+    #     winning_bid_price_currancy, winning_bid_price_value, ) = extract_bid_data(soup)
     # (rating, all_votes, positive_feedback, member_since, member_from) = extract_seller_data(soup)
 
     # return (rating, all_votes, positive_feedback, member_since, member_from)

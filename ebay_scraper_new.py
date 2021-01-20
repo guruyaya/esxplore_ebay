@@ -5,14 +5,14 @@ import argparse
 import re
 
 from urllib.parse import quote_plus
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Widly used regexes compiled
 re_html_cleanr = re.compile(r'<.*?>')
 re_par         = re.compile(r'\(([^\)]*)\)')
 re_percent     = re.compile(r'([0-9.]*)%')
 re_date_f1     = re.compile(r'[A-z][a-z][a-z]-[0-3][0-9]-[0-2][0-9]')
-re_date_f2     = re.compile(r'[0-3]?[0-9] [A-z][a-z][a-z] [1-2][09][0-9][0-9]')
+re_date_f2     = re.compile(r'[0-3]?[0-9] [A-z][a-z][a-z] [1-2][09][0-9][0-9] at [1-2]?[0-9]')
 
 # enter multiple phrases separated by '',
 phrases =['samsung a7']
@@ -30,7 +30,11 @@ def get_percent(str_per):
 def get_date_f1(str_date):
     date_data = re_date_f1.search(str_date)[0]
     return datetime.strptime(date_data, '%b-%d-%y')
-    
+
+def get_date_f2(str_date):
+    date_data = re_date_f2.search(str_date)[0]
+    return datetime.strptime(date_data, '%d %b %Y at %H')
+
 def get_seller_info_from_persona(seller_persona_span):
     print ("Num remarks:", get_in_paranthasis(clean_html( str(seller_persona_span.contents[1]) )))
     print ("precent: ", get_percent(str( seller_persona_span.contents[2] )))
@@ -90,8 +94,16 @@ def get_bid_data_from_bid_page(href, opening_bid):
     if (len(last_row) > 1):
         opening_bid = last_row.contents[-1].contents[1].getText()
 
-    print( soup.find(class_="app-bid-info_wrapper").contents[0].contents[2].getText() )
-    print( soup.find(class_="app-bid-info_wrapper").contents[0].contents[3].getText() )
+    date_ended = get_date_f2( soup.find(class_="app-bid-info_wrapper").contents[0].contents[2].getText() )
+    duration_txt = soup.find(class_="app-bid-info_wrapper").contents[0].contents[3].getText()
+    duration = int( 
+        duration_txt.split(':')[1].split(' ')[0]
+    )
+    
+    date_started = date_ended - timedelta(days=duration)
+    print ("date_started", date_started)
+    print ("date_ended", date_ended)
+    print ("duration", duration)
     return (opening_bid, None)
 
 def extract_bid_data(soup):
@@ -128,7 +140,6 @@ def extract_bid_data(soup):
         if winning_bid_price.startswith ('US $'):
             winning_bid_price = winning_bid_price.replace('US $', 'US ')
     
-    
     print ("winning_bid_price", winning_bid_price_currancy, winning_bid_price_value)
     print ("starting_bid_price", starting_bid_price_currancy, starting_bid_price_value)
     print ("Did the listing sell? ", sold)
@@ -141,7 +152,7 @@ def extract_sale_data(soup):
     (sold, 
         starting_bid_price_currancy, starting_bid_price_value, 
         winning_bid_price_currancy, winning_bid_price_value, ) = extract_bid_data(soup)
-        
+    
     return (sold, 
         starting_bid_price_currancy, starting_bid_price_value, 
         winning_bid_price_currancy, winning_bid_price_value, )

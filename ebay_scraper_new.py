@@ -3,7 +3,7 @@ import requests
 import bs4
 import argparse
 import re
-
+import math
 from urllib.parse import quote_plus
 from datetime import datetime
 
@@ -18,7 +18,7 @@ phrases = ['samsung a7']
 
 def get_total_pages(given_url):
   resp = requests.get(url)
-  soup = bs(resp.text , 'html.parser')
+  soup = bs4.BeautifulSoup(resp.text , 'html.parser')
   total_items = soup.find('h2' ,class_ = 'srp-controls__count-heading').string.split()[-2]
   # Page contain 48 items
   total_pages = math.floor(float(total_items.replace(',','')) / 48)

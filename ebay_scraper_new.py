@@ -6,6 +6,7 @@ import re
 import math
 from urllib.parse import quote_plus
 from datetime import datetime, timedelta
+import traceback
 
 # Widly used regexes compiled
 re_par         = re.compile(r'\(([^\)]*)\)')
@@ -19,11 +20,9 @@ phrases = ['iphone 6s', 'iphone 6 -6s']
 
 def get_total_pages(given_url):
   resp = requests.get(given_url)
+  print (given_url)
   soup = bs4.BeautifulSoup(resp.text , 'html.parser')
-  total_items = soup.find('h2' ,class_ = 'srp-controls__count-heading').string.split()[-2]
-  # Page contain 48 items
-  total_pages = math.floor(float(total_items.replace(',','')) / 48)
-  return total_pages
+  return int( soup.find_all('a' ,class_='pg')[-1].getText() )
 
 def get_in_paranthasis(str_par):
     return re_par.search(str_par)[1]
@@ -191,39 +190,39 @@ def explore_product_page(href):
     )
 
 def process_phrase(phrase, writer):
-    site = ('https://www.ebay.com/sch/i.html?_from=R40&_sacat=0&_udlo=' +
+    url = ('https://www.ebay.com/sch/i.html?_from=R40&_sacat=0&_udlo=' +
             '&_udhi=&LH_Auction=1&_samilow=&_samihi=&_sadis=15&_stpos=90278-4805' +
             '&_fosrp=1&LH_Complete=1&_nkw={}' +
             '&_pppn=r1&scp=ce0').format(quote_plus(phrase))
 
-    res = requests.get(site)
-    res.raise_for_status()
-    soup = bs4.BeautifulSoup(res.text, "html.parser")
-    url = 'https://il.ebay.com/b/Cell-Phones-Smartphones/9355/bn_320094?LH_Auction=1&LH_Complete=1&rt=nc&_dmd=1'
     pages = get_total_pages(url)
-    for page in range(1, pages + 1):
+    
+    for page in range(1, min(10, pages + 1)): # max 10 pages
         cur_page = f'{url}&_pgn={page}'
-        print(cur_page)
-        if page > 10:
-            break
+        print("Exploring", cur_page)
 
-    # grab all the links and store its href destinations in a list
-    link_listing = soup.find_all(class_="vip")
+        res = requests.get(cur_page)
+        res.raise_for_status()
+        soup = bs4.BeautifulSoup(res.text, "html.parser")
 
-    for l in link_listing:
-        href = l['href']
+        # grab all the links and store its href destinations in a list
+        link_listing = soup.find_all(class_="vip")
 
-        try:
-            data = explore_product_page(href)
-        except:
-            print("Skipping", href)
-        else:
-            data = (phrase,) + data
-            writer.writerow(data)
+        for l in link_listing:
+            href = l['href']
 
-        # # early break
-        # if i > 10:
-        #     break
+            try:
+                data = explore_product_page(href)
+            except:
+                print(traceback.format_exc())
+                print("Skipping", href)
+            else:
+                data = (phrase,) + data
+                writer.writerow(data)
+
+            # # early break
+            # if i > 10:
+            #     break
 if __name__ == '__main__':
     with open('products.csv', 'w') as f:
         writer = csv.writer(f)

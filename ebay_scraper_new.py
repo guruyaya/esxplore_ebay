@@ -4,6 +4,7 @@ import bs4
 import argparse
 import re
 import math
+import sys
 from urllib.parse import quote_plus
 from datetime import datetime, timedelta
 import traceback
@@ -189,6 +190,11 @@ def explore_product_page(href):
         seller_rating, all_votes, positive_feedback, member_since, member_from
     )
 
+def get_page_soup(url):
+    res = requests.get(cur_page)
+    res.raise_for_status()
+    return bs4.BeautifulSoup(res.text, "html.parser")
+
 def process_phrase(phrase, writer):
     url = ('https://www.ebay.com/sch/i.html?_from=R40&_sacat=0&_udlo=' +
             '&_udhi=&LH_Auction=1&_samilow=&_samihi=&_sadis=15&_stpos=90278-4805' +
@@ -201,24 +207,26 @@ def process_phrase(phrase, writer):
         cur_page = f'{url}&_pgn={page}'
         print("Exploring", cur_page)
 
-        res = requests.get(cur_page)
-        res.raise_for_status()
-        soup = bs4.BeautifulSoup(res.text, "html.parser")
+        soup = get_page_soup(cur_page)
 
         # grab all the links and store its href destinations in a list
         link_listing = soup.find_all(class_="vip")
 
         for l in link_listing:
             href = l['href']
-
+            title = l.getText()
             try:
                 data = explore_product_page(href)
+            except SystemExit:
+                print ("Sys exit at ", href)
+                raise
             except:
                 print(traceback.format_exc())
                 print("Skipping", href)
             else:
-                data = (phrase,) + data
+                data = (phrase,title) + data
                 writer.writerow(data)
+            break
 
 if __name__ == '__main__':
     re_space_replace = re.compile(r'[ .,+]')
@@ -231,8 +239,8 @@ if __name__ == '__main__':
 
         with open(f'products/{phrase_filename}.csv', 'w') as f:
             writer = csv.writer(f)
-            writer.writerow(['phrase', 'sold', 'date_started', 'date_ended', 'duration', 
-                    'item_location', 'item_condition', 'item_shipping',
+            writer.writerow(['phrase', 'title', 'sold', 'date_started', 'date_ended', 
+                    'duration', 'item_location', 'item_condition', 'item_shipping',
                     'starting_bid_price_currancy', 'starting_bid_price_value',
                     'winning_bid_price_currancy', 'winning_bid_price_value',
                     'seller_rating', 'all_votes', 'positive_feedback', 'member_since', 'member_from'])

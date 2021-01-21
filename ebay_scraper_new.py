@@ -174,13 +174,17 @@ def explore_product_page(href):
     item_shipping = soup.find(id="shippingPlaceHolderId").getText()
     print("item_shipping", item_shipping)
 
+    seller_name = soup.find(class_='mbg-nw').getText()
+    print ("seller_name", seller_name)
+
     (sold, date_started, date_ended, duration,
         starting_bid_price_currancy, starting_bid_price_value, 
         winning_bid_price_currancy, winning_bid_price_value, ) = extract_bid_data(soup)
     (seller_rating, all_votes, positive_feedback, member_since, member_from) = extract_seller_data(soup)
 
 
-    return (sold, date_started, date_ended, duration, item_location, item_condition, item_shipping, 
+    return (sold, date_started, date_ended, duration, seller_name,
+        item_location, item_condition, item_shipping, 
         starting_bid_price_currancy, starting_bid_price_value, 
         winning_bid_price_currancy, winning_bid_price_value,
         seller_rating, all_votes, positive_feedback, member_since, member_from
@@ -244,7 +248,7 @@ if __name__ == '__main__':
         with open(f'products/{phrase_filename}.csv', 'w') as f:
             writer = csv.writer(f)
             writer.writerow(['phrase', 'title', 'sold', 'date_started', 'date_ended', 
-                    'duration', 'item_location', 'item_condition', 'item_shipping',
+                    'duration', 'seller_name', 'item_location', 'item_condition', 'item_shipping',
                     'starting_bid_price_currancy', 'starting_bid_price_value',
                     'winning_bid_price_currancy', 'winning_bid_price_value',
                     'seller_rating', 'all_votes', 'positive_feedback', 'member_since', 'member_from'])

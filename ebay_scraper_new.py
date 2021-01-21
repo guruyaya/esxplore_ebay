@@ -162,6 +162,13 @@ def get_original_link_soup(href):
     
     return soup
 
+def get_shipping_details(soup):
+    item_shipping = (soup.find(id='fshippingCost'))
+    if (item_shipping):
+        return item_shipping.getText().strip()
+
+    return soup.find(class_="vi-cvip-dspl").getText().strip()
+
 def explore_product_page(href):    
     soup = get_original_link_soup(href)
 
@@ -171,8 +178,8 @@ def explore_product_page(href):
     item_condition = soup.find(id="vi-itm-cond").getText()
     print ("item_condition", item_condition)
 
-    item_shipping = soup.find(id="shippingPlaceHolderId").getText()
-    print("item_shipping", item_shipping)
+    item_shipping = get_shipping_details(soup)
+    print ("item_shipping", item_shipping)
 
     seller_name = soup.find(class_='mbg-nw').getText()
     print ("seller_name", seller_name)

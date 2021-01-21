@@ -14,11 +14,11 @@ re_date_f1     = re.compile(r'[A-z][a-z][a-z]-[0-3][0-9]-[0-2][0-9]')
 re_date_f2     = re.compile(r'[0-3]?[0-9] [A-z][a-z][a-z] [1-2][09][0-9][0-9] at [1-2]?[0-9]')
 
 # enter multiple phrases separated by '',
-phrases = ['samsung a7']
+phrases = ['iphone 6s', 'iphone 6 -6s']
 
 
 def get_total_pages(given_url):
-  resp = requests.get(url)
+  resp = requests.get(given_url)
   soup = bs4.BeautifulSoup(resp.text , 'html.parser')
   total_items = soup.find('h2' ,class_ = 'srp-controls__count-heading').string.split()[-2]
   # Page contain 48 items
@@ -190,8 +190,7 @@ def explore_product_page(href):
         seller_rating, all_votes, positive_feedback, member_since, member_from
     )
 
-
-for phrase in phrases:
+def process_phrase(phrase, writer):
     site = ('https://www.ebay.com/sch/i.html?_from=R40&_sacat=0&_udlo=' +
             '&_udhi=&LH_Auction=1&_samilow=&_samihi=&_sadis=15&_stpos=90278-4805' +
             '&_fosrp=1&LH_Complete=1&_nkw={}' +
@@ -211,16 +210,27 @@ for phrase in phrases:
     # grab all the links and store its href destinations in a list
     link_listing = soup.find_all(class_="vip")
 
-    for i, l in enumerate(link_listing):
-        title = l.contents[0]
+    for l in link_listing:
         href = l['href']
 
         try:
-            explore_product_page(href)
+            data = explore_product_page(href)
         except:
-            print(href)
-            raise
+            print("Skipping", href)
+        else:
+            data = (phrase,) + data
+            writer.writerow(data)
 
-        # early break
-        if i > 10:
-            break
+        # # early break
+        # if i > 10:
+        #     break
+if __name__ == '__main__':
+    with open('products.csv', 'w') as f:
+        writer = csv.writer(f)
+        writer.writerow(['phrase', 'sold', 'date_started', 'date_ended', 'duration', 
+        'item_location', 'item_condition', 'item_shipping',
+        'starting_bid_price_currancy', 'starting_bid_price_value',
+        'winning_bid_price_currancy', 'winning_bid_price_value',
+        'seller_rating', 'all_votes', 'positive_feedback', 'member_since', 'member_from'])
+        for phrase in phrases:
+            process_phrase(phrase, writer)

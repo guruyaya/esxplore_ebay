@@ -181,6 +181,9 @@ def explore_product_page(href):
     item_shipping = get_shipping_details(soup)
     print ("item_shipping", item_shipping)
 
+    item_returns = soup.find(id='vi-ret-accrd-txt').getText()
+    print ("item_returns", item_returns)
+
     seller_name = soup.find(class_='mbg-nw').getText()
     print ("seller_name", seller_name)
 
@@ -191,7 +194,7 @@ def explore_product_page(href):
 
 
     return (sold, date_started, date_ended, duration, seller_name,
-        item_location, item_condition, item_shipping, 
+        item_location, item_condition, item_shipping, item_returns,
         starting_bid_price_currancy, starting_bid_price_value, 
         winning_bid_price_currancy, winning_bid_price_value,
         seller_rating, all_votes, positive_feedback, member_since, member_from
@@ -208,6 +211,7 @@ def get_page_soup(url):
     return bs4.BeautifulSoup(res.text, "html.parser")
 
 def process_phrase(phrase, writer):
+    print ("Phrase", phrase)
     url = ('https://www.ebay.com/sch/i.html?_from=R40&_sacat=0&_udlo=' +
             '&_udhi=&LH_Auction=1&_samilow=&_samihi=&_sadis=15&_stpos=90278-4805' +
             '&_fosrp=1&LH_Complete=1&_nkw={}' +
@@ -215,7 +219,7 @@ def process_phrase(phrase, writer):
 
     pages = get_total_pages(url)
     
-    for page in range(1, min(10, pages + 1)): # max 10 pages
+    for page in range(1, min(20, pages + 1)): # max 10 pages
         cur_page = f'{url}&_pgn={page}'
 
         soup = get_page_soup(cur_page)
@@ -234,7 +238,7 @@ def process_phrase(phrase, writer):
             except:
                 print(traceback.format_exc())
                 print("Skipping", href)
-                raise
+                # raise
             else:
                 data = (phrase,title) + data
                 writer.writerow(data)
@@ -255,7 +259,8 @@ if __name__ == '__main__':
         with open(f'products/{phrase_filename}.csv', 'w') as f:
             writer = csv.writer(f)
             writer.writerow(['phrase', 'title', 'sold', 'date_started', 'date_ended', 
-                    'duration', 'seller_name', 'item_location', 'item_condition', 'item_shipping',
+                    'duration', 'seller_name', 'item_location', 'item_condition', 
+                    'item_shipping', 'item_returns',
                     'starting_bid_price_currancy', 'starting_bid_price_value',
                     'winning_bid_price_currancy', 'winning_bid_price_value',
                     'seller_rating', 'all_votes', 'positive_feedback', 'member_since', 'member_from'])

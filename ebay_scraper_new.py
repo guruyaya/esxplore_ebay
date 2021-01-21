@@ -20,9 +20,8 @@ phrases = ['iphone 6s', 'iphone 6 -6s']
 
 
 def get_total_pages(given_url):
-  resp = requests.get(given_url)
   print (given_url)
-  soup = bs4.BeautifulSoup(resp.text , 'html.parser')
+  soup = get_page_soup(given_url)
   return int( soup.find_all('a' ,class_='pg')[-1].getText() )
 
 def get_in_paranthasis(str_par):
@@ -43,9 +42,7 @@ def get_date_f2(str_date):
 
 def get_data_from_seller_page(seller_span):
     seller_page_href = seller_span.contents[1]['href']
-    res = requests.get(seller_page_href)
-    res.raise_for_status()
-    soup = bs4.BeautifulSoup(res.text, "html.parser")
+    soup = get_page_soup(seller_page_href)
 
     rating = soup.find(**{'data-test-id': "user-score"}).contents[0]
     print("rating_score:", rating)
@@ -87,9 +84,7 @@ def get_bidding_price(soup):
     return bid_price_element.getText()
 
 def get_bid_data_from_bid_page(href, opening_bid):
-    res = requests.get(href)
-    res.raise_for_status()
-    soup = bs4.BeautifulSoup(res.text, "html.parser")
+    soup = get_page_soup(href)
 
     winning_bid = None
     rows = soup.find(class_="ui-component-table_wrapper").contents[1]
@@ -147,27 +142,23 @@ def extract_bid_data(soup):
         starting_bid_price_currancy, starting_bid_price_value, 
         winning_bid_price_currancy, winning_bid_price_value, )
 
-def get_original_link_soup(soup):
+def get_original_link_soup(href):
+    soup = get_page_soup(href)
+    
     original_link = soup.find(class_='nodestar-item-card-details__view-link')
     if original_link:
         print ("Link changed 1")
-        res = requests.get(original_link['href'])
-        res.raise_for_status()
-        return bs4.BeautifulSoup(res.text, "html.parser")
+        return get_page_soup(original_link['href'])
 
     original_link = soup.find(class_='vi-inl-lnk vi-original-listing')
     if original_link:
         print ("Link changed 1")
-        res = requests.get(original_link.contents[0]['href'])
-        res.raise_for_status()
-        return bs4.BeautifulSoup(res.text, "html.parser")
+        return get_page_soup(original_link.contents[0]['href'])
     
     return soup
 
 def explore_product_page(href):    
-    res = requests.get(href)
-    res.raise_for_status()
-    soup = get_original_link_soup( bs4.BeautifulSoup(res.text, "html.parser") )
+    soup = get_original_link_soup(href)
 
     item_location = soup.find(itemprop="availableAtOrFrom").getText().split(', ')[-1]
     print ("item_location", item_location)
@@ -191,7 +182,7 @@ def explore_product_page(href):
     )
 
 def get_page_soup(url):
-    res = requests.get(cur_page)
+    res = requests.get(url)
     res.raise_for_status()
     return bs4.BeautifulSoup(res.text, "html.parser")
 

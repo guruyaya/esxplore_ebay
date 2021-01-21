@@ -144,7 +144,7 @@ def extract_bid_data(soup):
 
 def get_original_link_soup(href):
     soup = get_page_soup(href)
-    
+
     original_link = soup.find(class_='nodestar-item-card-details__view-link')
     if original_link:
         print ("Link changed 1")
@@ -182,7 +182,11 @@ def explore_product_page(href):
     )
 
 def get_page_soup(url):
-    res = requests.get(url)
+    proxies = {
+        'http': 'http://amos:michamor@3.84.182.170:8128',
+        'https': 'http://amos:michamor@3.84.182.170:8128',
+    }
+    res = requests.get(url, proxies=proxies)
     res.raise_for_status()
     return bs4.BeautifulSoup(res.text, "html.parser")
 

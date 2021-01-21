@@ -80,7 +80,12 @@ def get_bidding_price(soup):
     bid_price_element = soup.find(id='prcIsum_bidPrice')
     if (bid_price_element):
         return bid_price_element.getText()
+
     bid_price_element = soup.find(class_='vi-VR-cvipPrice')
+    if (bid_price_element):
+        return bid_price_element.getText()
+    
+    bid_price_element = soup.find(id="prcIsum")
     return bid_price_element.getText()
 
 def get_bid_data_from_bid_page(href, opening_bid):
@@ -125,15 +130,15 @@ def extract_bid_data(soup):
     
     starting_bid_price_currancy, starting_bid_price_value = starting_bid_price.split(' ')
     winning_bid_price_currancy, winning_bid_price_value = (None, None)
-    if winning_bid_price:
-        winning_bid_price_currancy, winning_bid_price_value = winning_bid_price.split(' ')
 
+    if winning_bid_price:
         if winning_bid_price.startswith ('$'):
             winning_bid_price = winning_bid_price.replace('$', 'US ')
 
         if winning_bid_price.startswith ('US $'):
             winning_bid_price = winning_bid_price.replace('US $', 'US ')
     
+        winning_bid_price_currancy, winning_bid_price_value = winning_bid_price.split(' ')
     print ("starting_bid", starting_bid_price_currancy, starting_bid_price_value)
     print ("winning_bid", winning_bid_price_currancy, winning_bid_price_value)
     print ("Did the listing sell? ", sold)
@@ -152,7 +157,7 @@ def get_original_link_soup(href):
 
     original_link = soup.find(class_='vi-inl-lnk vi-original-listing')
     if original_link:
-        print ("Link changed 1")
+        print ("Link changed 2:")
         return get_page_soup(original_link.contents[0]['href'])
     
     return soup
@@ -182,6 +187,7 @@ def explore_product_page(href):
     )
 
 def get_page_soup(url):
+    print ("Url:" , url)
     proxies = {
         'http': 'http://amos:michamor@3.84.182.170:8128',
         'https': 'http://amos:michamor@3.84.182.170:8128',
@@ -200,7 +206,6 @@ def process_phrase(phrase, writer):
     
     for page in range(1, min(10, pages + 1)): # max 10 pages
         cur_page = f'{url}&_pgn={page}'
-        print("Exploring", cur_page)
 
         soup = get_page_soup(cur_page)
 
@@ -218,12 +223,16 @@ def process_phrase(phrase, writer):
             except:
                 print(traceback.format_exc())
                 print("Skipping", href)
+                raise
             else:
                 data = (phrase,title) + data
                 writer.writerow(data)
-            break
 
+explore_link = None
 if __name__ == '__main__':
+  if explore_link:
+    explore_product_page(explore_link)
+  else:
     re_space_replace = re.compile(r'[ .,+]')
     re_cleanup = re.compile(r'[^A-Za-z0-9-_]')
     for phrase in phrases:

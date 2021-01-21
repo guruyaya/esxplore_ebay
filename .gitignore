@@ -1,3 +1,5 @@
 .vscode
 .spyproject
 venv
+.idea
+products.csv

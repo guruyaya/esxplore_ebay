@@ -220,16 +220,21 @@ def process_phrase(phrase, writer):
                 data = (phrase,) + data
                 writer.writerow(data)
 
-            # # early break
-            # if i > 10:
-            #     break
 if __name__ == '__main__':
-    with open('products.csv', 'w') as f:
-        writer = csv.writer(f)
-        writer.writerow(['phrase', 'sold', 'date_started', 'date_ended', 'duration', 
-        'item_location', 'item_condition', 'item_shipping',
-        'starting_bid_price_currancy', 'starting_bid_price_value',
-        'winning_bid_price_currancy', 'winning_bid_price_value',
-        'seller_rating', 'all_votes', 'positive_feedback', 'member_since', 'member_from'])
-        for phrase in phrases:
+    re_space_replace = re.compile(r'[ .,+]')
+    re_cleanup = re.compile(r'[^A-Za-z0-9-_]')
+    for phrase in phrases:
+        phrase_filename = phrase
+        phrase_filename = re_space_replace.sub('_', phrase_filename)
+        phrase_filename = re_cleanup.sub('_', phrase_filename)
+        phrase_filename = phrase_filename.lower()
+
+        with open(f'products/{phrase_filename}.csv', 'w') as f:
+            writer = csv.writer(f)
+            writer.writerow(['phrase', 'sold', 'date_started', 'date_ended', 'duration', 
+                    'item_location', 'item_condition', 'item_shipping',
+                    'starting_bid_price_currancy', 'starting_bid_price_value',
+                    'winning_bid_price_currancy', 'winning_bid_price_value',
+                    'seller_rating', 'all_votes', 'positive_feedback', 'member_since', 'member_from'])
+        
             process_phrase(phrase, writer)

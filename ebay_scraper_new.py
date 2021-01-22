@@ -207,11 +207,7 @@ def explore_product_page(href):
 
 def get_page_soup(url):
     print ("Url:" , url)
-    proxies = {
-        'http': 'http://amos:michamor@3.84.182.170:8128',
-        'https': 'http://amos:michamor@3.84.182.170:8128',
-    }
-    res = requests.get(url, proxies=proxies)
+    res = requests.get(url, proxies=None)
     res.raise_for_status()
     return bs4.BeautifulSoup(res.text, "html.parser")
 

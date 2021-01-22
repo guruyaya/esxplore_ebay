@@ -18,12 +18,12 @@ re_date_f2     = re.compile(r'[0-3]?[0-9] [A-z][a-z][a-z] [1-2][09][0-9][0-9] at
 # enter multiple phrases separated by '',
 phrases = []
 
-phrases =+ ['Iphone 1','iphone 3G','iphone 3G -3Gs','Iphone 4 -4s',]
-phrases =+ ['Iphone 4s','Iphone 5 -5c -5s','iphone 5c','Iphone 5s','Iphone 6 -plus -6s',]
-phrases =+ ['Iphone 6 plus -6s','iphone 6s -plus','iphone 6s plus','Iphone se','Iphone 7 -plus',]
-phrases =+ ['Iphone 7 plus','Iphone 8 -plus','Iphone 8 plus','iphone x -xs -max -xr',]
-phrases =+ ['Iphone xs -max','Iphone xs max','Iphone xr','Iphone 11 –pro -max',]
-phrases =+ ['Iphone 11 pro -max','Iphone 11 pro max',]
+phrases += ['Iphone 1','iphone 3G','iphone 3G -3Gs','Iphone 4 -4s',]
+phrases += ['Iphone 4s','Iphone 5 -5c -5s','iphone 5c','Iphone 5s','Iphone 6 -plus -6s',]
+phrases += ['Iphone 6 plus -6s','iphone 6s -plus','iphone 6s plus','Iphone se','Iphone 7 -plus',]
+phrases += ['Iphone 7 plus','Iphone 8 -plus','Iphone 8 plus','iphone x -xs -max -xr',]
+phrases += ['Iphone xs -max','Iphone xs max','Iphone xr','Iphone 11 –pro -max',]
+phrases += ['Iphone 11 pro -max','Iphone 11 pro max',]
 
 
 def get_total_pages(given_url):

@@ -24,7 +24,7 @@ phrases += ['Iphone 6 plus -6s','iphone 6s -plus','iphone 6s plus','Iphone se','
 phrases += ['Iphone 7 plus','Iphone 8 -plus','Iphone 8 plus','iphone x -xs -max -xr',]
 phrases += ['Iphone xs -max','Iphone xs max','Iphone xr','Iphone 11 –pro -max',]
 phrases += ['Iphone 11 pro -max','Iphone 11 pro max',]
-
+phrases += ['Iphone se','Iphone 12 -pro -mini','Iphone 12 pro -mini ','Iphone 12 pro mini ','Iphone 12 mini -pro']
 
 def get_total_pages(given_url):
   print (given_url)

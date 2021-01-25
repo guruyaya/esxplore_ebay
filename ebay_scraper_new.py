@@ -13,7 +13,7 @@ import traceback
 re_par         = re.compile(r'\(([^\)]*)\)')
 re_percent     = re.compile(r'([0-9.]*)%')
 re_date_f1     = re.compile(r'[A-z][a-z][a-z]-[0-3][0-9]-[0-9][0-9]')
-re_date_f2     = re.compile(r'[0-3]?[0-9] [A-z][a-z][a-z] [1-2][09][0-9][0-9] at [1-2]?[0-9]')
+re_date_f2     = re.compile(r'[0-3]?[0-9] [A-z][a-z][a-z] [1-2][09][0-9][0-9] at [1-2]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9][ap]m')
 
 # enter multiple phrases separated by '',
 phrases = []
@@ -24,7 +24,8 @@ phrases += ['Iphone 6 plus -6s','iphone 6s -plus','iphone 6s plus','Iphone se','
 phrases += ['Iphone 7 plus','Iphone 8 -plus','Iphone 8 plus','iphone x -xs -max -xr',]
 phrases += ['Iphone xs -max','Iphone xs max','Iphone xr','Iphone 11 –pro -max',]
 phrases += ['Iphone 11 pro -max','Iphone 11 pro max',]
-phrases += ['Iphone se','Iphone 12 -pro -mini','Iphone 12 pro -mini ','Iphone 12 pro mini ','Iphone 12 mini -pro']
+phrases += ['Iphone se','Iphone 12 -pro -mini','Iphone 12 pro -mini ',]
+phrases += ['Iphone 12 pro mini ','Iphone 12 mini -pro']
 
 def get_total_pages(given_url):
   print (given_url)
@@ -44,7 +45,7 @@ def get_date_f1(str_date):
 
 def get_date_f2(str_date):
     date_data = re_date_f2.search(str_date)[0]
-    return datetime.strptime(date_data, '%d %b %Y at %H')
+    return datetime.strptime(date_data, '%d %b %Y at %I:%M:%S%p')
 
 
 def get_data_from_seller_page(seller_span):
@@ -174,7 +175,11 @@ def get_shipping_details(soup):
     if (item_shipping):
         return item_shipping.getText().strip()
 
-    return soup.find(class_="vi-cvip-dspl").getText().strip()
+    item_shipping = soup.find(class_="vi-cvip-dspl")
+    if (item_shipping):
+        return item_shipping.getText().strip()
+    
+    return (soup.find(class_="shp-sub-text").contents[1].getText().strip())
 
 def explore_product_page(href):    
     soup = get_original_link_soup(href)
@@ -192,7 +197,7 @@ def explore_product_page(href):
     print ("item_returns", item_returns)
 
     seller_name = soup.find(class_='mbg-nw').getText()
-    print ("seller_name", seller_name)
+    # print ("seller_name", seller_name)
 
     (sold, date_started, date_ended, duration,
         starting_bid_price_currancy, starting_bid_price_value, 
@@ -238,7 +243,7 @@ def process_phrase(phrase, writer):
             except SystemExit:
                 print ("Sys exit at ", href)
                 raise
-            except:
+            except Exception:
                 print(traceback.format_exc())
                 print("Skipping", href)
                 # raise
